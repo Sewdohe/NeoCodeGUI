@@ -1,0 +1,45 @@
+<mat-stepper #stepper>
+  <mat-step label="Sastify Dependencies">
+    <mat-card>
+      <div *ngIf="missingBinaries?.length != 0; else allGood" class="center-container mat-body">
+        <mat-card-title>You need some dependencies first:</mat-card-title>
+        <p class=""mat-subheader>Choose what you'd like me to install for you</p>
+        <mat-selection-list (selectionChange)="setSelectedDeps()" #selectedDeps>
+          <mat-list-option *ngFor="let missing of missingBinaries" [value]="missing">
+            {{missing}}
+          </mat-list-option>
+        </mat-selection-list>
+      </div>
+      <ng-template class="center-container" #allGood>
+        <h1>You're good to go!</h1>
+        <p class="center-text">You've got all the deps</p>
+      </ng-template>
+    </mat-card>
+    <div>
+      <button [disabled]="selectedForInstall.length == 0" color="accent" (click)="installDeps()" mat-button>Install Selected</button>
+      <!-- <button (click)="reCheckDeps()" mat-button>Check Deps Again</button> -->
+      <button [disabled]="!depsSastified" color="accent" matStepperNext mat-button>Next</button>
+    </div>
+  </mat-step>
+
+  <mat-step label="Clone Config">
+    <div class="center-container">
+      <h1>Now let's Clone NeoCode's Config</h1>
+      <p>I'll back up your current config if you already have one.</p>
+      <div *ngIf="!cloneDone; else nextButton">
+        <button matStepperPrevious color="warn" mat-button>Back</button>
+        <button (click)="clone_repo()" mat-button>Clone</button>
+      </div>
+      <ng-template #nextButton>
+        <button color="accent" matStepperNext mat-button>Next</button>
+      </ng-template>
+    </div>
+  </mat-step>
+
+
+  <mat-step label="Set Options">
+
+  </mat-step>
+
+
+</mat-stepper>

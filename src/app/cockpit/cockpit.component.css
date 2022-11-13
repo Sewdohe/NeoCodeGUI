@@ -1,0 +1,19 @@
+:host {
+  padding-top: 90px;
+}
+
+.mat-horizontal-content-container {
+  height: calc(100% - 90px);
+}
+
+mat-card {
+  margin-bottom: 2rem;
+}
+
+.mat-stepper {
+  padding-top: 90px;
+}
+
+button {
+  margin: 0.5rem;
+}
