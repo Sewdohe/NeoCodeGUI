@@ -1,5 +1,5 @@
 <mat-stepper #stepper>
-  <mat-step label="Sastify Dependencies">
+  <mat-step label="Satisfy Dependencies">
     <mat-card>
       <div *ngIf="missingBinaries?.length != 0; else allGood" class="center-container mat-body">
         <mat-card-title>You need some dependencies first:</mat-card-title>
@@ -25,20 +25,24 @@
   <mat-step label="Clone Config">
     <div class="center-container">
       <h1>Now let's Clone NeoCode's Config</h1>
-      <p>I'll back up your current config if you already have one.</p>
-      <div *ngIf="!cloneDone; else nextButton">
-        <button matStepperPrevious color="warn" mat-button>Back</button>
-        <button (click)="clone_repo()" mat-button>Clone</button>
+      <p>Don't worry - I'll back up your current config first.</p>
+        <mat-progress-bar mode="determinate" [value]="clonePercent"></mat-progress-bar>
+      <div *ngIf="cloneDone">
+        <h2>All Done!</h2>
       </div>
-      <ng-template #nextButton>
-        <button color="accent" matStepperNext mat-button>Next</button>
-      </ng-template>
+      <div>
+        <button matStepperPrevious color="warn" mat-button>Back</button>
+        <button (click)="clone_repo_api()" mat-button>Clone</button>
+        <button (click)="backup()" mat-button>Backup Current Config</button>
+        <button [disabled]="!cloneDone" color="primary" matStepperNext mat-button>Next</button>
+      </div>
     </div>
   </mat-step>
 
 
   <mat-step label="Set Options">
-
+    <button mat-button>Create User Config</button>
+    <button (click)="packerInstall()" mat-button>Run Packer Insall</button>
   </mat-step>
 
 

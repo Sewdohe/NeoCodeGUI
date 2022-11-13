@@ -17,6 +17,8 @@ import { MatList, MatListModule } from '@angular/material/list';
 import { CockpitComponent } from './cockpit/cockpit.component';
 import {MatCardModule} from '@angular/material/card';
 import {MatDividerModule} from '@angular/material/divider';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+
 
 
 @NgModule({
@@ -36,9 +38,10 @@ import {MatDividerModule} from '@angular/material/divider';
     MatIconModule,
     MatListModule,
     MatCardModule,
-    MatDividerModule
+    MatDividerModule,
+    MatProgressBarModule
   ],
   bootstrap: [AppComponent],
-  exports: [MatStepperModule, MatListModule, MatCardModule, MatDividerModule]
+  exports: [MatStepperModule, MatListModule, MatCardModule, MatDividerModule, MatProgressBarModule]
 })
 export class AppModule { }

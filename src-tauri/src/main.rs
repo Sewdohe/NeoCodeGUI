@@ -3,12 +3,11 @@
     windows_subsystem = "windows"
 )]
 
-use std::{env, fs};
 use std::path::PathBuf;
 use std::process::Command;
+use std::{env, fs};
 
 use os_info::Type;
-use tauri::utils::config;
 
 pub fn get_home_dir() -> PathBuf {
     let os = env::consts::OS;
@@ -98,73 +97,65 @@ fn check_installed(binary_name: &str) -> bool {
     }
 }
 
-pub fn backup_old_config(config_path: &PathBuf) {
-    println!("{}", "\n \nSTEP 1: Backing up old config");
-    println!("{} {}", "Current OS is", env::consts::OS); // Prints the current OS.
-
+#[tauri::command]
+fn backup_old_config(config_path: &str) {
     // Change process directory to the systems config folder
     match env::set_current_dir(config_path) {
-        Ok(()) => println!(
-            "Changed process to config directory: {}",
-            config_path.display()
-        ),
-        Err(err) => println!(
-            "{} {}",
-            "Error: couldn't locate config directory {}",
-            err
-        ),
+        Ok(()) => println!("Changed process to config directory: {}", config_path),
+        Err(err) => println!("{} {}", "Error: couldn't locate config directory {}", err),
+    }
+
+    // println!("{:?}", env::current_dir());
+
+    match fs::metadata("nvim_old") {
+        Ok(meta) => println!("{:?}", meta),
+        Err(e) => println!("{}", e)
     }
 
     // Rename the nvim folder to nvim.old (backup)
     println!("{}", "Trying to rename nvim folder...");
-    match fs::rename("./nvim", "nvim.old") {
+
+    match fs::rename("nvim", "nvim_old") {
         Ok(()) => {
             println!("Old config back up complete \n \n")
         }
-        Err(_) => {
-            println!(
-                "{}",
-                "You don't have an old config to back up. Skipping... \n \n"
-            )
+        Err(e) => {
+            println!("{}", e)
         }
     }
 }
 
 #[tauri::command]
-fn clone_repo() {
-    let repo_url = "https://github.com/Sewdohe/NeoCode";
-    let config_dir = determine_config_path();
-    backup_old_config(&config_dir);
-    let _clone_command = std::process::Command::new("git")
-        .current_dir(config_dir)
-        .arg("clone")
-        .arg(repo_url)
-        .arg("nvim")
+#[cfg(target_family = "unix")]
+fn run_packer_install() {
+    println!("running packer install");
+    std::process::Command::new("neovide")
+        // .arg("--headless")
+        // .arg("-c")
+        // .arg("autocmd User PackerComplete quitall")
+        // .arg("-c")
+        // .arg("PackerSync")
         .spawn()
-        .expect("Error: couldn't clone repo")
+        .expect("Error: Failed to run editor")
         .wait()
-        .expect("Error: please try again");
-    
+        .expect("Error: Editor returned a non-zero status");
 }
 
 #[tauri::command]
 fn check_os() -> Type {
-  let os = os_info::get();
+    let os = os_info::get();
 
-  match os.os_type() {
-    Type::Macos => {
-          Type::Macos
-      }
-      Type::EndeavourOS | Type::Arch | Type::Manjaro |Type::Ubuntu | Type::Pop | Type::Debian  => {
-          Type::Linux
-      }
-      Type::Windows => {
-        Type::Windows
-      }
-      _ => {
-        Type::Linux
-      }
-  }
+    match os.os_type() {
+        Type::Macos => Type::Macos,
+        Type::EndeavourOS
+        | Type::Arch
+        | Type::Manjaro
+        | Type::Ubuntu
+        | Type::Pop
+        | Type::Debian => Type::Linux,
+        Type::Windows => Type::Windows,
+        _ => Type::Linux,
+    }
 }
 
 #[tauri::command]
@@ -175,7 +166,7 @@ fn try_install_binary(binary_name: &str) -> String {
     let os = os_info::get();
 
     match os.os_type() {
-      Type::Macos => {
+        Type::Macos => {
             println!("This is probably an apple laptop!");
             package_manager = "brew";
             args.push("install");
@@ -186,7 +177,7 @@ fn try_install_binary(binary_name: &str) -> String {
             args.push("-S");
             args.push("--noconfirm")
         }
-        Type::Ubuntu | Type::Pop | Type::Debian  => {
+        Type::Ubuntu | Type::Pop | Type::Debian => {
             println!("You're on an Debian derivative");
             package_manager = "apt";
             args.push("install");
@@ -194,10 +185,10 @@ fn try_install_binary(binary_name: &str) -> String {
             args.push("--force-yes");
         }
         Type::Windows => {
-          //TODO
+            //TODO
         }
         _ => {
-          println!("Unsupported platform! TempleOS maybe? ");
+            println!("Unsupported platform! TempleOS maybe? ");
         }
     }
 
@@ -212,15 +203,21 @@ fn try_install_binary(binary_name: &str) -> String {
     println!("command done");
 
     match install_command {
-      Ok(output) => return String::from_utf8(output.stdout).unwrap(),
-      Err(err) => return err.to_string()
-    }        
+        Ok(output) => return String::from_utf8(output.stdout).unwrap(),
+        Err(err) => return err.to_string(),
+    }
 }
 
 fn main() {
     tauri::Builder::default()
         // .invoke_handler(tauri::generate_handler![check_installed])
-        .invoke_handler(tauri::generate_handler![try_install_binary, check_installed, check_os, clone_repo])
+        .invoke_handler(tauri::generate_handler![
+            try_install_binary,
+            check_installed,
+            check_os,
+            backup_old_config,
+            run_packer_install
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -16,6 +16,7 @@ export class ToolbarComponent {
   constructor(private tauri: TauriService) {
     this.currentOS = this.tauri.currentOS
     this.currentOS.subscribe(os => {
+      console.log(os)
       switch(os) {
         case "Linux":
           this.osIconString = "fa-linux"

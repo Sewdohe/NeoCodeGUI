@@ -21,6 +21,7 @@ which = "4.2.4"
 colored = "2"
 os_type = "2.6.0"
 os_info = "3.5.1"
+fs_extra = "1.2.0"
 
 [features]
 # by default Tauri runs in production mode
